@@ -1,0 +1,15 @@
+query products($arcql: String!) {
+    find(type: Product, arcql: $arcql) {
+        edges {
+            node {
+                ... on Product {
+                    hypi {
+                        id
+                    }
+                    title
+                    description
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,12 @@
+name: xdxd
+label: xdxd
+hypi:
+  id: 01F51BVBBHB8Y33VT65K1QCWK7
+releases:
+  - name: latest
+    schema:
+      types: schema.graphql
+    status: PUBLISHED
+    notes: latest version
+    hypi:
+      id: 01F51BVBBJ46F18Z3N9PNRRGR6

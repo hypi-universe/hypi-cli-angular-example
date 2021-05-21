@@ -1,0 +1,11 @@
+query ProductDetails($id: String!){
+  get(type: Product, id: $id) {
+      ... on Product {
+      hypi {
+          id
+        }
+      title
+      description
+      }
+  }
+}

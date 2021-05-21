@@ -6,6 +6,8 @@ import { AppComponent } from './app.component';
 import { ProductsComponent } from './products/products.component';
 
 import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
+
 import { ProductDetailComponent } from './product-detail/product-detail.component';
 
 import { HttpClientModule, HttpHeaders } from '@angular/common/http';
@@ -24,7 +26,8 @@ import { InMemoryCache } from '@apollo/client/core';
     BrowserModule,
     AppRoutingModule,
     FormsModule,
-    HttpClientModule
+    HttpClientModule,
+    ReactiveFormsModule
   ],
   providers: [
     {

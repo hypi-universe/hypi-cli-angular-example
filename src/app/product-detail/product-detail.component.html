@@ -1,14 +1,15 @@
-<div *ngIf="product">
-  <!-- <h2>{{product.title | uppercase}} Details</h2> -->
-  <!-- <div><span>id: </span>{{product.hypi.id}}</div>
+<div *ngIf="product | async as product">
+
+  <h2>{{( product.title )}} Details</h2>
+  <div><span>id: </span>{{product.hypi.id}}</div>
   <div>
     <label for="product-title">Product title: </label>
-    <input id="product-title" [(ngModel)]="product.title" placeholder="title">
+    <div><span>id: </span>{{product.title}}</div>
   </div>
   <div>
     <label for="product-description">Product description: </label>
-    <input id="product-description" [(ngModel)]="product.description" placeholder="description">
-  </div> -->
+    <div><span>id: </span>{{product.description}}</div>
+  </div>
 </div>
 
 <button (click)="goBack()">go back</button>
