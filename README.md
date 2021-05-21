@@ -1,27 +1,41 @@
-# AngularExample
+# Getting Started with Hypi cli Angular
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 12.0.0.
+* [Available commands](#available-commands)
+* [Getting started](#getting-started)
 
-## Development server
+## Install hypi cli
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+```$ npm install -g @hypi/cli```
 
-## Code scaffolding
+## Available commands
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
 
-## Build
+### `hypi login` 
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+```hypi login``` 
+Login with user name and password
+```hypi login -d``` 
+Login with organization name space and Authorization token from here https://hypi.app/developer-hub
 
-## Running unit tests
+### `hypi init`
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+```hypi init```
 
-## Running end-to-end tests
+ Initialize your app and instance or refernece an existing domain
+.hypi folder will be created with app.yaml, instance.yaml and schema.graphql files
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice.
+### `hypi sync`
 
-## Further help
+```hypi sync angular```
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+will sync your local schema and get the full schema, then genearte graphql Angular schema file
+
+## Getting started
+1. Inside yoir Angular project, run ```hypi login``` 
+   Afetr login, user config folder will be placed in `~/.config/hypi/config.json`
+2. Run ```hypi init``` to initialize your app or refernece an existing domain
+.hypi folder will be created with `app.yaml`, `instance.yaml` and `schema.graphql`
+3. Write your schema inside `schema.graphql`
+4. Write your queries and mutations inside `/src/graphql` and then run `hypi sync angular` to generate the Angular schema
+   The full generated schema will be inside .hypi folder `/.hypi/generated-schema.graphql`
+5. The genearted graphql Angular schema will be inside `/src/generated/graphql.ts`
