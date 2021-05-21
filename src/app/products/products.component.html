@@ -1,0 +1,9 @@
+
+<h2>My Products</h2>
+<ul class="products">
+  <li *ngFor="let product of products | async">
+    <a routerLink="/detail/{{product.node.hypi.id}}">
+      <span class="badge">{{product.id}}</span> {{product.node.title}}
+    </a>
+  </li>
+</ul>
