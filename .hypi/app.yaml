@@ -1,7 +1,7 @@
-name: xdxd
-label: xdxd
+name: angular2
+label: angular2
 hypi:
-  id: 01F51BVBBHB8Y33VT65K1QCWK7
+  id: 01F9B73WRDZDA4V6Q3RMSTYRB3
 releases:
   - name: latest
     schema:
@@ -9,4 +9,4 @@ releases:
     status: PUBLISHED
     notes: latest version
     hypi:
-      id: 01F51BVBBJ46F18Z3N9PNRRGR6
+      id: 01F9B73WRQESW4GAFHG3B8RR34

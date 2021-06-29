@@ -1,50 +1,6 @@
 """This directive allows results to be deferred during execution"""
 directive @defer on FIELD
 
-directive @indices(sets: [[String]]) on OBJECT | INTERFACE
-
-"""
-Tells Hypi not to generate a table internally for the type this is attached to.
-"""
-directive @notable on OBJECT
-
-""" directive which allows any GraphQL definition's field to be provided by a Hypi Arc Tan function.
-"""
-directive @tan(type: TanType!, name: String, handler: String, inline: String, saveAs: String) on FIELD_DEFINITION
-
-"""
-Adding this to any keyword indexed field ensures that no duplicates can be inserted for that field
-"""
-directive @unique on FIELD_DEFINITION
-
-"""Add to any field which should not have a relay API generated"""
-directive @norelay on FIELD | FIELD_DEFINITION
-
-directive @computed(query: String, type: String, limit: Int, postQueryFn: String) on FIELD | FIELD_DEFINITION
-
-"""
-Indicates that the field cannot be changed after it is initially created
-"""
-directive @immutable on FIELD_DEFINITION
-
-"""
-Valid on String, Object and Array fields.
-Check if the string or array length matches the range.
-Checks if the object's list of non-null fields matches the range
-"""
-directive @length(min: Long, max: Long) on FIELD_DEFINITION
-
-directive @embedded on FIELD_DEFINITION
-
-"""check if the date is in the future"""
-directive @future on FIELD_DEFINITION
-
-"""check if the value is not null"""
-directive @notNull on FIELD_DEFINITION
-
-"""If present on an object, no aggregation is possible on that type"""
-directive @noagg on OBJECT
-
 """
 check if the field's value matches the regular expression given a match flag (see https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html  )
 if allMustMatch is true (default) then all regex must pass
@@ -52,37 +8,25 @@ if allMustMatch is true (default) then all regex must pass
 directive @pattern(regex: [String!]!, allMustMatch: Boolean = true) on FIELD_DEFINITION
 
 """
-Allows every type and function to be marked with the app and release where it was defined. This helps to identify where dependent types and functions came from in a schema
+Tells Hypi not to generate a table internally for the type this is attached to.
 """
-directive @src(releaseId: String) on SCHEMA | SCALAR | OBJECT | FIELD_DEFINITION | INTERFACE | UNION | ENUM | INPUT_OBJECT
-
-"""Trigger the execution of the workflow with the given name"""
-directive @workflow(name: String, inline: WorkflowInput) on FIELD_DEFINITION
+directive @notable on OBJECT
 
 """
-check whether the string is conform to the email address specification
-Matches RFC 5322 regex, probably most relevant https://tools.ietf.org/html/rfc5322#section-3.4.1
-pattern available at https://stackoverflow.com/a/201378/400048
+Added to any field which should be store encrypted and not allowed to be returned to clients via GraphQL
+PKCS5 is decrypted and can be passed to other functions but will not be returned through the generated APIs.
+Note that only PKCS5 is reversible. Other encrypted formats are ONE WAY meaning you can compare new values against the
+encrypted hash but you cannot get or compare to the original directly.
 """
-directive @email on FIELD_DEFINITION
+directive @secret(hash: HashAlgorithm) on FIELD_DEFINITION
 
 """
-When added to an Int or Float field, the math arguments will not be added to that field
+Used internally to mark that a field in the schema should be resolve as an OpenAPI impl.
 """
-directive @nomath on OBJECT | FIELD_DEFINITION
+directive @openapi_namespace on FIELD_DEFINITION
 
-"""
-check if the string or array is not null nor empty (for strings verifies its not all whitespace).
-"""
-directive @notEmpty on FIELD_DEFINITION
-
-"""
-Used by core to mark a type as being one of the generated TAgg types. Not for general use!
-"""
-directive @isagg(type: String!) on OBJECT | ENUM
-
-"""check if the date is in the past"""
-directive @past on FIELD_DEFINITION
+"""check if the value is not null"""
+directive @notNull on FIELD_DEFINITION
 
 """
 A trigger allows dynamically triggering functions before and after events on any Query or Mutation function
@@ -92,6 +36,16 @@ A trigger can be applied to inherited functions by redefining the function with 
 If applied to an object the before and after triggers are executed before and after any upsert of that type
 """
 directive @trigger(config: Trigger!) on OBJECT | FIELD_DEFINITION
+
+"""If present on an object, no aggregation is possible on that type"""
+directive @noagg on OBJECT
+
+"""
+Valid on String, Object and Array fields.
+Check if the string or array length matches the range.
+Checks if the object's list of non-null fields matches the range
+"""
+directive @length(min: Long, max: Long) on FIELD_DEFINITION
 
 """
 When applied causes the value of the field it is applied to to be resolved using an HTTP query configured with the given parameters
@@ -110,21 +64,72 @@ are available. Map is the standard Java Map interface containing static util met
 """
 directive @http(method: HttpMethod! = GET, url: String!, headers: String, requestTemplate: String, inline: InlineHttpRequestTemplate, saveAs: String) on FIELD_DEFINITION
 
+"""Trigger the execution of the workflow with the given name"""
+directive @workflow(name: String, inline: WorkflowInput) on FIELD_DEFINITION
+
+directive @indices(sets: [[String]]) on OBJECT | INTERFACE
+
+"""
+When added to an Int or Float field, the math arguments will not be added to that field
+"""
+directive @nomath on OBJECT | FIELD_DEFINITION
+
+"""
+check if the string or array is not null nor empty (for strings verifies its not all whitespace).
+"""
+directive @notEmpty on FIELD_DEFINITION
+
+"""check if the date is in the past"""
+directive @past on FIELD_DEFINITION
+
+"""check if the date is in the future"""
+directive @future on FIELD_DEFINITION
+
+"""
+Allows every type and function to be marked with the app and release where it was defined. This helps to identify where dependent types and functions came from in a schema
+"""
+directive @src(releaseId: String) on SCHEMA | SCALAR | OBJECT | FIELD_DEFINITION | INTERFACE | UNION | ENUM | INPUT_OBJECT
+
+""" directive which allows any GraphQL definition's field to be provided by a Hypi Arc Tan function.
+"""
+directive @tan(type: TanType!, name: String, handler: String, inline: String, saveAs: String) on FIELD_DEFINITION
+
 directive @computedCount(field: String, distinct: Boolean = false) on FIELD_DEFINITION
 
-"""Added by Hypi to objects and fields it generates"""
-directive @generated on SCALAR | OBJECT | FIELD_DEFINITION | UNION | ENUM | INPUT_OBJECT
+"""
+check whether the string is conform to the email address specification
+Matches RFC 5322 regex, probably most relevant https://tools.ietf.org/html/rfc5322#section-3.4.1
+pattern available at https://stackoverflow.com/a/201378/400048
+"""
+directive @email on FIELD_DEFINITION
+
+directive @computed(query: String, type: String, limit: Int, postQueryFn: String) on FIELD | FIELD_DEFINITION
+
+"""
+Used by core to mark a type as being one of the generated TAgg types. Not for general use!
+"""
+directive @isagg(type: String!) on OBJECT | ENUM
+
+"""
+Adding this to any keyword indexed field ensures that no duplicates can be inserted for that field
+"""
+directive @unique on FIELD_DEFINITION
+
+"""Add to any field which should not have a relay API generated"""
+directive @norelay on FIELD | FIELD_DEFINITION
+
+directive @embedded on FIELD_DEFINITION
 
 """If present on an object no input type will be generated from that type"""
 directive @noinput on OBJECT
 
 """
-Added to any field which should be store encrypted and not allowed to be returned to clients via GraphQL
-PKCS5 is decrypted and can be passed to other functions but will not be returned through the generated APIs.
-Note that only PKCS5 is reversible. Other encrypted formats are ONE WAY meaning you can compare new values against the
-encrypted hash but you cannot get or compare to the original directly.
+Indicates that the field cannot be changed after it is initially created
 """
-directive @secret(hash: HashAlgorithm) on FIELD_DEFINITION
+directive @immutable on FIELD_DEFINITION
+
+"""Added by Hypi to objects and fields it generates"""
+directive @generated on SCALAR | OBJECT | FIELD_DEFINITION | UNION | ENUM | INPUT_OBJECT
 
 type AggregatedPolicyAggs {
   decisionStrategy: AggOtherScalar
@@ -173,7 +178,20 @@ type Query {
   """
   Find objects of the given type which match the query. Use a conditional fragment to select fields as in https://graphql.org/learn/schema/#union-types
   """
-  find(type: HypiMutationType!, arcql: String!, first: Int, after: String, last: Int, before: String, includeTrashed: Boolean): HypiFilterConnection!
+  find(
+    type: HypiMutationType!
+    arcql: String!
+    first: Int
+    after: String
+    last: Int
+    before: String
+    includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
+  ): HypiFilterConnection!
 
   """Gets a single object by its ID (hypi.id)"""
   get(type: HypiMutationType!, id: String!): HypiRootAggregate
@@ -212,6 +230,8 @@ enum PersonNameFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 type Product {
@@ -313,6 +333,8 @@ enum FileFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 type PhoneAggs {
@@ -463,6 +485,8 @@ enum GroupFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 """All fields defined by Country"""
@@ -487,6 +511,8 @@ enum CountryFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 """All fields defined by RealmLink"""
@@ -501,6 +527,8 @@ enum RealmLinkFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 """
@@ -531,7 +559,7 @@ type EmailSendingAttemptAggs {
 """
 A union of all types in the app which can be created or updated directly
 """
-union HypiRootAggregate = Product | Hypi | PageInfo | HypiResultEdge | HypiFilterConnection | HypiEnv | Pair | AggInt | AggFloat | AggOtherScalar | Script | RequestTemplate | NotificationCtx | Notification | URL | Currency | Coordinate | GeoEnvelope | Language | Address | PersonName | Phone | Email | Password | RemoteLogin | LoginAttempt | BruteForceDetectionOptions | OAuth2AuthorizedClient | AuthClient | Image | EmailVerification | EmailTemplate | EmailSendingAttempt | PasswordReminder | Webhook | WebhookResponse | LogMessage | GraphQLRef | WorkflowStepData | WorkflowStep | AccessToken | PermissionDescription | Country | Account | Person | Organisation | OAuthProvider | Realm | Group | Role | RolePolicy | ClientPolicy | TimePolicy | AggregatedPolicy | GroupPolicy | AccountPolicy | RealmPolicy | RealmLink | Permission | File | Video | EmailMessage | Workflow | WorkflowSession | Counter | Gauge | ServerlessResponse
+union HypiRootAggregate = Product | PageInfo | HypiResultEdge | HypiFilterConnection | HypiEnv | Pair | AggInt | AggFloat | AggOtherScalar | Script | RequestTemplate | NotificationCtx | Notification | URL | Currency | Coordinate | GeoEnvelope | Language | Address | PersonName | Phone | Email | Password | RemoteLogin | LoginAttempt | BruteForceDetectionOptions | OAuth2AuthorizedClient | AuthClient | ABACPolicy | ABACTag | Image | EmailVerification | EmailTemplate | EmailSendingAttempt | PasswordReminder | Webhook | WebhookResponse | LogMessage | GraphQLRef | WorkflowStepData | WorkflowStep | AccessToken | StorageCounter | PermissionDescription | Hypi | Country | Account | Person | Organisation | OAuthProvider | Realm | Group | Role | RolePolicy | ClientPolicy | TimePolicy | AggregatedPolicy | GroupPolicy | AccountPolicy | RealmPolicy | RealmLink | Permission | File | Video | EmailMessage | Workflow | WorkflowSession | Counter | Gauge | ServerlessResponse
 
 """An object available as "env" in all scripts"""
 type HypiEnv {
@@ -598,6 +626,8 @@ enum VideoFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 input OAuth2AuthorizedClientGroupByOptions {
@@ -767,6 +797,29 @@ type AggregatedPolicy implements Policy {
   policies(arcql: String, first: Int, after: String, last: Int, before: String): [Policy!]!
 }
 
+input ABACPolicyInput {
+  hypi: HypiInput
+  from: DateTime
+  to: DateTime
+  givenInstance: String
+  givenType: String!
+  givenOperation: String!
+  givenFn: String
+  givenFnPrefix: String
+  whenResourceTagKeyEq: String
+  whenResourceTagKeyPrefix: String
+  whenResourceTagValueEq: String
+  whenResourceTagValuePrefix: String
+  assertAccountIdEq: String
+  assertAccountUsernamePrefix: String
+  assertAccountTagKeyEq: String
+  assertAccountTagKeyPrefix: String
+  assertAccountTagValEq: String
+  assertAccountTagValPrefix: String
+  boundary: PolicyBoundary
+  allowedFields: String
+}
+
 """All fields defined by Phone"""
 enum PhoneFields {
   hypi
@@ -780,6 +833,8 @@ enum PhoneFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 input AccountGroupByOptions {
@@ -821,10 +876,18 @@ type ServerlessResponse {
   attributes(arcql: String, first: Int, after: String, last: Int, before: String): [String]
 }
 
+input StorageCounterInputOpt {
+  hypi: HypiInputOpt
+  type: String
+  field: String
+  size: Int
+}
+
+"""@deprecated - to be removed"""
 type RealmLink {
   hypi: Hypi
-  name: String!
-  accounts(arcql: String, first: Int, after: String, last: Int, before: String): [Account!]!
+  name: String! @deprecated(reason: "RealmLink will be removed in a future version")
+  accounts(arcql: String, first: Int, after: String, last: Int, before: String): [Account!]! @deprecated(reason: "RealmLink will be removed in a future version")
 }
 
 """All fields defined by RolePolicy"""
@@ -842,6 +905,82 @@ enum RolePolicyFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
+}
+
+"""All fields defined by ABACPolicy"""
+enum ABACPolicyFields {
+  hypi
+  from
+  to
+
+  """
+   The instance the policy applies to. By default the same instance in which it exists.
+   A `Platform Admin` can set it to *, all other users get permission denied if this is not the same as their current instance.
+   
+  """
+  givenInstance
+
+  """e.g. Account or *"""
+  givenType
+
+  """Exactly one of Query|Mutation|Subscription|*"""
+  givenOperation
+
+  """The exact function name or wildcard e.g. find|upsert|*"""
+  givenFn
+
+  """
+  The prefix that any function can begin with e.g. find will match findX, findY, findOther
+  """
+  givenFnPrefix
+  whenResourceTagKeyEq
+  whenResourceTagKeyPrefix
+  whenResourceTagValueEq
+  whenResourceTagValuePrefix
+
+  """Policy applies when the account ID is equal to this"""
+  assertAccountIdEq
+
+  """Policy applies when the account username starts with this"""
+  assertAccountUsernamePrefix
+
+  """When set, the account MUST have a tag whose key is equal to this"""
+  assertAccountTagKeyEq
+
+  """When set, the account MUST have a tag whose key is starts with this"""
+  assertAccountTagKeyPrefix
+
+  """When set, the account MUST have a tag whose value is equal to this"""
+  assertAccountTagValEq
+
+  """When set, the account MUST have a tag whose value is starts with this"""
+  assertAccountTagValPrefix
+
+  """
+  Resource owner can set the boundary to RESOURCE (or anyone that has permission to do so)
+  System Admin for the instance can set the boundary to INSTANCE
+  Platform Admin can set the boundary to PLATFORM
+  PLATFORM|INSTANCE|RESOURCE
+  """
+  boundary
+
+  """
+  If provided, this is a comma separate list of field paths that are allowed by this policy
+  e.g. a,b.c allows access to a and all sub-fields below it as well as to the field c under the parent field b. No other field under b is allowed
+  If the policy is allowing read access, only these fields can be seen. If it is write acces, only these fields can be modified.
+  """
+  allowedFields
+  hypi_id
+  hypi_impl
+  hypi_created
+  hypi_updated
+  hypi_trashed
+  hypi_createdBy
+  hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 """All fields defined by Workflow"""
@@ -887,6 +1026,8 @@ enum WorkflowFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
   evaluateIf_hypi
   evaluateIf_type
   evaluateIf_field
@@ -901,6 +1042,29 @@ input WorkflowStepDataInput {
   hypi: HypiInput
   stepName: String!
   stepResult: Any!
+}
+
+input ABACPolicyInputOpt {
+  hypi: HypiInputOpt
+  from: DateTime
+  to: DateTime
+  givenInstance: String
+  givenType: String
+  givenOperation: String
+  givenFn: String
+  givenFnPrefix: String
+  whenResourceTagKeyEq: String
+  whenResourceTagKeyPrefix: String
+  whenResourceTagValueEq: String
+  whenResourceTagValuePrefix: String
+  assertAccountIdEq: String
+  assertAccountUsernamePrefix: String
+  assertAccountTagKeyEq: String
+  assertAccountTagKeyPrefix: String
+  assertAccountTagValEq: String
+  assertAccountTagValPrefix: String
+  boundary: PolicyBoundary
+  allowedFields: String
 }
 
 """Scalar fields defined by Notification"""
@@ -980,13 +1144,14 @@ input PolicyInputOpt {
   decisionStrategy: DecisionStrategy
 }
 
+"""@deprecated - to be removed"""
 type RealmPolicy implements Policy {
   hypi: Hypi
   name: String!
 
   """Positive` or `Negative"""
   logic: AuthLogic
-  realms(arcql: String, first: Int, after: String, last: Int, before: String): [RealmLink!]
+  realms(arcql: String, first: Int, after: String, last: Int, before: String): [RealmLink!] @deprecated(reason: "RealmPolicy will be removed in a future version")
 }
 
 input PermissionRequest {
@@ -1028,6 +1193,8 @@ enum HypiEnvFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 input WorkflowOrderedInputOpt {
@@ -1126,6 +1293,37 @@ enum RealmFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
+}
+
+type ABACPolicyAggs {
+  from: AggOtherScalar
+  to: AggOtherScalar
+  givenInstance: AggOtherScalar
+  givenType: AggOtherScalar
+  givenOperation: AggOtherScalar
+  givenFn: AggOtherScalar
+  givenFnPrefix: AggOtherScalar
+  whenResourceTagKeyEq: AggOtherScalar
+  whenResourceTagKeyPrefix: AggOtherScalar
+  whenResourceTagValueEq: AggOtherScalar
+  whenResourceTagValuePrefix: AggOtherScalar
+  assertAccountIdEq: AggOtherScalar
+  assertAccountUsernamePrefix: AggOtherScalar
+  assertAccountTagKeyEq: AggOtherScalar
+  assertAccountTagKeyPrefix: AggOtherScalar
+  assertAccountTagValEq: AggOtherScalar
+  assertAccountTagValPrefix: AggOtherScalar
+  boundary: AggOtherScalar
+  allowedFields: AggOtherScalar
+  hypi_id: AggOtherScalar
+  hypi_impl: AggOtherScalar
+  hypi_created: AggOtherScalar
+  hypi_updated: AggOtherScalar
+  hypi_trashed: AggOtherScalar
+  hypi_createdBy: AggOtherScalar
+  hypi_instanceId: AggOtherScalar
 }
 
 input EmailTemplateInputOpt {
@@ -1184,10 +1382,76 @@ enum WorkflowSessionFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 input CounterMaths {
   value: MathInputFloat
+}
+
+type ABACPolicy {
+  hypi: Hypi
+  from: DateTime
+  to: DateTime
+
+  """
+   The instance the policy applies to. By default the same instance in which it exists.
+   A `Platform Admin` can set it to *, all other users get permission denied if this is not the same as their current instance.
+   
+  """
+  givenInstance: String
+
+  """e.g. Account or *"""
+  givenType: String!
+
+  """Exactly one of Query|Mutation|Subscription|*"""
+  givenOperation: String!
+
+  """The exact function name or wildcard e.g. find|upsert|*"""
+  givenFn: String
+
+  """
+  The prefix that any function can begin with e.g. find will match findX, findY, findOther
+  """
+  givenFnPrefix: String
+  whenResourceTagKeyEq: String
+  whenResourceTagKeyPrefix: String
+  whenResourceTagValueEq: String
+  whenResourceTagValuePrefix: String
+
+  """Policy applies when the account ID is equal to this"""
+  assertAccountIdEq: String
+
+  """Policy applies when the account username starts with this"""
+  assertAccountUsernamePrefix: String
+
+  """When set, the account MUST have a tag whose key is equal to this"""
+  assertAccountTagKeyEq: String
+
+  """When set, the account MUST have a tag whose key is starts with this"""
+  assertAccountTagKeyPrefix: String
+
+  """When set, the account MUST have a tag whose value is equal to this"""
+  assertAccountTagValEq: String
+
+  """When set, the account MUST have a tag whose value is starts with this"""
+  assertAccountTagValPrefix: String
+
+  """
+  Resource owner can set the boundary to RESOURCE (or anyone that has permission to do so)
+  System Admin for the instance can set the boundary to INSTANCE
+  Platform Admin can set the boundary to PLATFORM
+  PLATFORM|INSTANCE|RESOURCE
+  """
+  boundary: PolicyBoundary
+
+  """
+  If provided, this is a comma separate list of field paths that are allowed by this policy
+  e.g. a,b.c allows access to a and all sub-fields below it as well as to the field c under the parent field b. No other field under b is allowed
+  If the policy is allowing read access, only these fields can be seen. If it is write acces, only these fields can be modified.
+  """
+  allowedFields: String
 }
 
 input GraphQLRefInputOpt {
@@ -1218,7 +1482,6 @@ type PermissionAggs {
   resource: AggOtherScalar
   operationType: AggOtherScalar
   includeAllAccounts: AggOtherScalar
-  targetInstance: AggOtherScalar
   scopes: AggOtherScalar
   operations: AggOtherScalar
   hypi_id: AggOtherScalar
@@ -1347,6 +1610,12 @@ type Video {
   thumbnails(arcql: String, first: Int, after: String, last: Int, before: String): [Image!]
 }
 
+input ABACTagInputOpt {
+  hypi: HypiInputOpt
+  key: String
+  value: String
+}
+
 """All fields defined by Password"""
 enum PasswordFields {
   hypi
@@ -1365,6 +1634,8 @@ enum PasswordFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 input ProductGroupByOptions {
@@ -1612,6 +1883,8 @@ enum CurrencyFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 input OAuthProviderGroupByOptions {
@@ -1739,6 +2012,8 @@ enum ClientPolicyFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 input LoginAttemptInput {
@@ -1850,6 +2125,12 @@ type AuthClientAggs {
   hypi_instanceId: AggOtherScalar
 }
 
+enum PolicyBoundary {
+  PLATFORM
+  INSTANCE
+  RESOURCE
+}
+
 input EmailSendingAttemptInputOpt {
   hypi: HypiInputOpt
   headers: Json
@@ -1930,6 +2211,8 @@ enum WebhookFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 
   """
    This refers to a GraphQL function.
@@ -2229,11 +2512,18 @@ input PersonInputOpt {
   preferences: [PairInputOpt]
 }
 
-input RequestTemplateInput {
-  hypi: HypiInput
-  name: String!
-  request: String
-  response: String
+"""Scalar fields defined by StorageCounter"""
+enum StorageCounterScalarFields {
+  type
+  field
+  size
+  hypi_id
+  hypi_impl
+  hypi_created
+  hypi_updated
+  hypi_trashed
+  hypi_createdBy
+  hypi_instanceId
 }
 
 """All fields defined by Hypi"""
@@ -2268,6 +2558,14 @@ enum HypiFields {
 
   """The ID of the app instance which created and owns the object"""
   instanceId
+  tags
+}
+
+input RequestTemplateInput {
+  hypi: HypiInput
+  name: String!
+  request: String
+  response: String
 }
 
 """All fields defined by BruteForceDetectionOptions"""
@@ -2302,6 +2600,8 @@ enum BruteForceDetectionOptionsFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 input GeoInputOpt {
@@ -2437,6 +2737,8 @@ enum PasswordReminderFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 
   """The Account email that needs to be changed"""
   to_hypi
@@ -2511,6 +2813,8 @@ enum EmailTemplateFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 input RealmPolicyInput {
@@ -2575,7 +2879,6 @@ input WorkflowConditionalInputOpt {
 """A list of types on which mutations can be performed on"""
 input HypiUpsertInputUnion {
   Product: [ProductInputOpt!]
-  Hypi: [HypiInputOpt!]
   Pair: [PairInputOpt!]
   Script: [ScriptInputOpt!]
   RequestTemplate: [RequestTemplateInputOpt!]
@@ -2596,6 +2899,8 @@ input HypiUpsertInputUnion {
   BruteForceDetectionOptions: [BruteForceDetectionOptionsInputOpt!]
   OAuth2AuthorizedClient: [OAuth2AuthorizedClientInputOpt!]
   AuthClient: [AuthClientInputOpt!]
+  ABACPolicy: [ABACPolicyInputOpt!]
+  ABACTag: [ABACTagInputOpt!]
   Image: [ImageInputOpt!]
   EmailVerification: [EmailVerificationInputOpt!]
   EmailTemplate: [EmailTemplateInputOpt!]
@@ -2608,6 +2913,8 @@ input HypiUpsertInputUnion {
   WorkflowStepData: [WorkflowStepDataInputOpt!]
   WorkflowStep: [WorkflowStepInputOpt!]
   AccessToken: [AccessTokenInputOpt!]
+  StorageCounter: [StorageCounterInputOpt!]
+  Hypi: [HypiInputOpt!]
   Country: [CountryInputOpt!]
   Account: [AccountInputOpt!]
   Person: [PersonInputOpt!]
@@ -2676,6 +2983,8 @@ enum AggFloatFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 
   """The value of the aggregated field for each group"""
   groupValues_hypi
@@ -2748,6 +3057,8 @@ enum GroupPolicyFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 interface HttpResponse {
@@ -2755,6 +3066,13 @@ interface HttpResponse {
   headers: Json
   status: Int
   rawPayload: String
+}
+
+input StorageCounterInput {
+  hypi: HypiInput
+  type: String!
+  field: String!
+  size: Int!
 }
 
 type LoginAttemptAggs {
@@ -2815,6 +3133,8 @@ enum LogMessageFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 input WebhookResponseInput {
@@ -3093,6 +3413,8 @@ enum NotificationCtxFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 interface WorkflowTimed {
@@ -3105,6 +3427,19 @@ interface WorkflowTimed {
    
   """
   maxExecutionTime: String
+}
+
+type StorageCounterAggs {
+  type: AggOtherScalar
+  field: AggOtherScalar
+  size: AggInt
+  hypi_id: AggOtherScalar
+  hypi_impl: AggOtherScalar
+  hypi_created: AggOtherScalar
+  hypi_updated: AggOtherScalar
+  hypi_trashed: AggOtherScalar
+  hypi_createdBy: AggOtherScalar
+  hypi_instanceId: AggOtherScalar
 }
 
 input AuthClientInputOpt {
@@ -3200,6 +3535,8 @@ enum ImageFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 type GeoEnvelopeAggs {
@@ -3311,6 +3648,8 @@ enum GraphQLRefFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 """Scalar fields defined by File"""
@@ -3381,7 +3720,6 @@ input PermissionInput {
   operationType: OpType!
   operations: [String]!
   includeAllAccounts: Boolean
-  targetInstance: String
 }
 
 type RemoteLogin {
@@ -3445,6 +3783,21 @@ enum GraphQLRefScalarFields {
   hypi_instanceId
 }
 
+input ABACPolicyGroupByOptions {
+  """The field by which to to group the matching data"""
+  field: ABACPolicyScalarFields!
+
+  """
+  If provided, the aggregated data will be ordered by this field and any other field which specifies this field, in the order they're defined
+  """
+  order: AggOrder
+
+  """
+  Applies only to DateTime fields. If provided then the date is grouped to this granularity e.g. if MINUTES then the grouping will be per minute
+  """
+  dateGranularity: TimeUnit
+}
+
 """Scalar fields defined by Permission"""
 enum PermissionScalarFields {
   name
@@ -3469,18 +3822,6 @@ enum PermissionScalarFields {
   If true, this permission grants/denies access to all accounts (including anonymous account)
   """
   includeAllAccounts
-
-  """
-   When a Permission is created, the instance to which it grants access is assumed to be the same as the one in which it is created.
-   This means - if this field is not provided, it will be set to the current instance by default.
-   Some times, it is necessary to grant permission to a resource that exists in a different instance.
-   In those cases, this field can be set to the instance ID from which the resource needs to be accessed.
-   It is also possible to set this to the wildcard character '*' - in which case, this permission grants access to the resource from any instance.
-   Note that wildcard can only be used to grant access, by default, access is denied to all other instances
-   so a negative policy will have no effect when this field is set to '*'.
-   
-  """
-  targetInstance
   scopes
   operations
   hypi_id
@@ -3511,6 +3852,7 @@ input HypiInputOpt {
   trashed: DateTime
   createdBy: ID
   instanceId: String
+  tags: [ABACTagInputOpt]
 }
 
 """Scalar fields defined by EmailMessage"""
@@ -3684,6 +4026,8 @@ enum CoordinateFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 type File {
@@ -3734,6 +4078,12 @@ type RealmAggs {
   hypi_trashed: AggOtherScalar
   hypi_createdBy: AggOtherScalar
   hypi_instanceId: AggOtherScalar
+}
+
+input ABACTagInput {
+  hypi: HypiInput
+  key: String!
+  value: String
 }
 
 """
@@ -3825,6 +4175,8 @@ enum AccessTokenFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 """Scalar fields defined by Pair"""
@@ -3866,6 +4218,18 @@ enum AccessTokenScalarFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+}
+
+type ABACTagAggs {
+  key: AggOtherScalar
+  value: AggOtherScalar
+  hypi_id: AggOtherScalar
+  hypi_impl: AggOtherScalar
+  hypi_created: AggOtherScalar
+  hypi_updated: AggOtherScalar
+  hypi_trashed: AggOtherScalar
+  hypi_createdBy: AggOtherScalar
+  hypi_instanceId: AggOtherScalar
 }
 
 interface WorkflowExecutableAs {
@@ -3920,6 +4284,8 @@ enum EmailSendingAttemptFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 """Scalar fields defined by LoginAttempt"""
@@ -3954,6 +4320,28 @@ enum EmailFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
+}
+
+input StorageCounterGroupByOptions {
+  """The field by which to to group the matching data"""
+  field: StorageCounterScalarFields!
+
+  """
+  If provided, the aggregated data will be ordered by this field and any other field which specifies this field, in the order they're defined
+  """
+  order: AggOrder
+
+  """
+  Applies only to DateTime fields. If provided then the date is grouped to this granularity e.g. if MINUTES then the grouping will be per minute
+  """
+  dateGranularity: TimeUnit
+}
+
+"""All numeric fields defined by StorageCounter"""
+enum StorageCounterNumericFields {
+  size
 }
 
 type GeoEnvelope {
@@ -4130,6 +4518,22 @@ input GaugeGroupByOptions {
   dateGranularity: TimeUnit
 }
 
+input WorkflowAsyncInputOpt {
+  execAs: String
+  maxExecutionTime: String
+  fn: GraphQLRefInputOpt
+  repeatN: Int
+  steps: [WorkflowStepInputOpt]
+  cronSchedule: String
+  repeatIf: GraphQLRefInputOpt
+  async: Boolean
+  parallel: Boolean
+  name: String
+  hypi: HypiInputOpt
+  evaluateIf: GraphQLRefInputOpt
+  order: Int
+}
+
 """All fields defined by AggInt"""
 enum AggIntFields {
   hypi
@@ -4148,6 +4552,8 @@ enum AggIntFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 
   """The value of the aggregated field for each group"""
   groupValues_hypi
@@ -4157,22 +4563,6 @@ enum AggIntFields {
 
   """The value of the aggregated field for each group"""
   groupValues_value
-}
-
-input WorkflowAsyncInputOpt {
-  execAs: String
-  maxExecutionTime: String
-  fn: GraphQLRefInputOpt
-  repeatN: Int
-  steps: [WorkflowStepInputOpt]
-  cronSchedule: String
-  repeatIf: GraphQLRefInputOpt
-  async: Boolean
-  parallel: Boolean
-  name: String
-  hypi: HypiInputOpt
-  evaluateIf: GraphQLRefInputOpt
-  order: Int
 }
 
 input WorkflowTimedInputOpt {
@@ -4209,6 +4599,21 @@ input ImageGroupByOptions {
   Applies only to DateTime fields. If provided then the date is grouped to this granularity e.g. if MINUTES then the grouping will be per minute
   """
   dateGranularity: TimeUnit
+}
+
+"""Scalar fields defined by ABACTag"""
+enum ABACTagScalarFields {
+  key
+
+  """If provided then policy assertion can be made against it"""
+  value
+  hypi_id
+  hypi_impl
+  hypi_created
+  hypi_updated
+  hypi_trashed
+  hypi_createdBy
+  hypi_instanceId
 }
 
 input PairInput {
@@ -4248,18 +4653,6 @@ type Permission {
   If true, this permission grants/denies access to all accounts (including anonymous account)
   """
   includeAllAccounts: Boolean
-
-  """
-   When a Permission is created, the instance to which it grants access is assumed to be the same as the one in which it is created.
-   This means - if this field is not provided, it will be set to the current instance by default.
-   Some times, it is necessary to grant permission to a resource that exists in a different instance.
-   In those cases, this field can be set to the instance ID from which the resource needs to be accessed.
-   It is also possible to set this to the wildcard character '*' - in which case, this permission grants access to the resource from any instance.
-   Note that wildcard can only be used to grant access, by default, access is denied to all other instances
-   so a negative policy will have no effect when this field is set to '*'.
-   
-  """
-  targetInstance: String
   policies(arcql: String, first: Int, after: String, last: Int, before: String): [Policy!]
   scopes(arcql: String, first: Int, after: String, last: Int, before: String): [String!]!
   operations(arcql: String, first: Int, after: String, last: Int, before: String): [String]!
@@ -4300,6 +4693,8 @@ enum TimePolicyFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 """Email related"""
@@ -4378,6 +4773,8 @@ enum AccountFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 """The event field of HypiEvent will be one of these"""
@@ -4557,6 +4954,8 @@ enum RequestTemplateFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 input BruteForceDetectionOptionsMaths {
@@ -4580,6 +4979,8 @@ enum WorkflowStepDataFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 """Scalar fields defined by PersonName"""
@@ -4722,6 +5123,8 @@ enum ServerlessResponseFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 """All fields defined by WorkflowStep"""
@@ -4762,6 +5165,8 @@ enum WorkflowStepFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 
   """
   The function to execute for this step, the data returned by the step can subsequently be used in other steps
@@ -4825,6 +5230,8 @@ enum GeoEnvelopeFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 input PasswordGroupByOptions {
@@ -4842,6 +5249,14 @@ input PasswordGroupByOptions {
   dateGranularity: TimeUnit
 }
 
+type ABACTag {
+  hypi: Hypi
+  key: String!
+
+  """If provided then policy assertion can be made against it"""
+  value: String
+}
+
 """All fields defined by Notification"""
 enum NotificationFields {
   hypi
@@ -4854,6 +5269,8 @@ enum NotificationFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
   ctx_hypi
   ctx_type
   ctx_targetAccount
@@ -4898,6 +5315,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [ProductAggs]
   script(
     """
@@ -4923,6 +5345,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [ScriptAggs]
   requestTemplate(
     """
@@ -4948,6 +5375,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [RequestTemplateAggs]
   notificationCtx(
     """
@@ -4973,6 +5405,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [NotificationCtxAggs]
   notification(
     """
@@ -4998,6 +5435,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [NotificationAggs]
   uRL(
     """
@@ -5023,6 +5465,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [URLAggs]
   currency(
     """
@@ -5048,6 +5495,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [CurrencyAggs]
   coordinate(
     """
@@ -5073,6 +5525,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [CoordinateAggs]
   geoEnvelope(
     """
@@ -5098,6 +5555,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [GeoEnvelopeAggs]
   language(
     """
@@ -5123,6 +5585,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [LanguageAggs]
   address(
     """
@@ -5148,6 +5615,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [AddressAggs]
   personName(
     """
@@ -5173,6 +5645,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [PersonNameAggs]
   phone(
     """
@@ -5198,6 +5675,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [PhoneAggs]
   email(
     """
@@ -5223,6 +5705,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [EmailAggs]
   password(
     """
@@ -5248,6 +5735,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [PasswordAggs]
   remoteLogin(
     """
@@ -5273,6 +5765,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [RemoteLoginAggs]
   loginAttempt(
     """
@@ -5298,6 +5795,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [LoginAttemptAggs]
   bruteForceDetectionOptions(
     """
@@ -5323,6 +5825,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [BruteForceDetectionOptionsAggs]
   oAuth2AuthorizedClient(
     """
@@ -5348,6 +5855,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [OAuth2AuthorizedClientAggs]
   authClient(
     """
@@ -5373,7 +5885,72 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [AuthClientAggs]
+  aBACPolicy(
+    """
+    Filters rows before the they are summarised into groups by the GROUP BY clause
+    """
+    where: String
+  ): ABACPolicyAggs
+  aBACPolicyWith(
+    """
+    Filters rows before the they are summarised into groups by the GROUP BY clause
+    """
+    where: String
+
+    """
+    Combines rows into groups based on matching values in specified columns. One row is returned for each group.
+    """
+    groupBy: [ABACPolicyGroupByOptions!]!
+
+    """Filters rows after the results are grouped"""
+    having: String
+    first: Int
+    after: String
+    last: Int
+    before: String
+    includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
+  ): [ABACPolicyAggs]
+  aBACTag(
+    """
+    Filters rows before the they are summarised into groups by the GROUP BY clause
+    """
+    where: String
+  ): ABACTagAggs
+  aBACTagWith(
+    """
+    Filters rows before the they are summarised into groups by the GROUP BY clause
+    """
+    where: String
+
+    """
+    Combines rows into groups based on matching values in specified columns. One row is returned for each group.
+    """
+    groupBy: [ABACTagGroupByOptions!]!
+
+    """Filters rows after the results are grouped"""
+    having: String
+    first: Int
+    after: String
+    last: Int
+    before: String
+    includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
+  ): [ABACTagAggs]
   image(
     """
     Filters rows before the they are summarised into groups by the GROUP BY clause
@@ -5398,6 +5975,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [ImageAggs]
   emailVerification(
     """
@@ -5423,6 +6005,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [EmailVerificationAggs]
   emailTemplate(
     """
@@ -5448,6 +6035,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [EmailTemplateAggs]
   emailSendingAttempt(
     """
@@ -5473,6 +6065,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [EmailSendingAttemptAggs]
   passwordReminder(
     """
@@ -5498,6 +6095,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [PasswordReminderAggs]
   webhook(
     """
@@ -5523,6 +6125,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [WebhookAggs]
   webhookResponse(
     """
@@ -5548,6 +6155,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [WebhookResponseAggs]
   logMessage(
     """
@@ -5573,6 +6185,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [LogMessageAggs]
   graphQLRef(
     """
@@ -5598,6 +6215,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [GraphQLRefAggs]
   workflowStepData(
     """
@@ -5623,6 +6245,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [WorkflowStepDataAggs]
   workflowStep(
     """
@@ -5648,6 +6275,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [WorkflowStepAggs]
   accessToken(
     """
@@ -5673,7 +6305,42 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [AccessTokenAggs]
+  storageCounter(
+    """
+    Filters rows before the they are summarised into groups by the GROUP BY clause
+    """
+    where: String
+  ): StorageCounterAggs
+  storageCounterWith(
+    """
+    Filters rows before the they are summarised into groups by the GROUP BY clause
+    """
+    where: String
+
+    """
+    Combines rows into groups based on matching values in specified columns. One row is returned for each group.
+    """
+    groupBy: [StorageCounterGroupByOptions!]!
+
+    """Filters rows after the results are grouped"""
+    having: String
+    first: Int
+    after: String
+    last: Int
+    before: String
+    includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
+  ): [StorageCounterAggs]
   country(
     """
     Filters rows before the they are summarised into groups by the GROUP BY clause
@@ -5698,6 +6365,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [CountryAggs]
   account(
     """
@@ -5723,6 +6395,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [AccountAggs]
   person(
     """
@@ -5748,6 +6425,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [PersonAggs]
   organisation(
     """
@@ -5773,6 +6455,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [OrganisationAggs]
   oAuthProvider(
     """
@@ -5798,6 +6485,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [OAuthProviderAggs]
   realm(
     """
@@ -5823,6 +6515,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [RealmAggs]
   group(
     """
@@ -5848,6 +6545,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [GroupAggs]
   role(
     """
@@ -5873,6 +6575,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [RoleAggs]
   rolePolicy(
     """
@@ -5898,6 +6605,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [RolePolicyAggs]
   clientPolicy(
     """
@@ -5923,6 +6635,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [ClientPolicyAggs]
   timePolicy(
     """
@@ -5948,6 +6665,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [TimePolicyAggs]
   aggregatedPolicy(
     """
@@ -5973,6 +6695,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [AggregatedPolicyAggs]
   groupPolicy(
     """
@@ -5998,6 +6725,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [GroupPolicyAggs]
   accountPolicy(
     """
@@ -6023,6 +6755,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [AccountPolicyAggs]
   realmPolicy(
     """
@@ -6048,6 +6785,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [RealmPolicyAggs]
   realmLink(
     """
@@ -6073,6 +6815,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [RealmLinkAggs]
   permission(
     """
@@ -6098,6 +6845,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [PermissionAggs]
   file(
     """
@@ -6123,6 +6875,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [FileAggs]
   video(
     """
@@ -6148,6 +6905,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [VideoAggs]
   emailMessage(
     """
@@ -6173,6 +6935,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [EmailMessageAggs]
   workflow(
     """
@@ -6198,6 +6965,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [WorkflowAggs]
   workflowSession(
     """
@@ -6223,6 +6995,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [WorkflowSessionAggs]
   counter(
     """
@@ -6248,6 +7025,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [CounterAggs]
   gauge(
     """
@@ -6273,6 +7055,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [GaugeAggs]
   serverlessResponse(
     """
@@ -6298,6 +7085,11 @@ type HypiAggregationType {
     last: Int
     before: String
     includeTrashed: Boolean
+
+    """
+    The page number to offset results by. This should be used in combination with after (does not work with before). It can be used by itself but carries some performance impact as a result we limit this to a max of 25
+    """
+    page: Int
   ): [ServerlessResponseAggs]
 }
 
@@ -6407,6 +7199,8 @@ enum URLFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 input EmailMessageInputOpt {
@@ -6498,6 +7292,8 @@ enum PairFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 enum HashAlgorithm {
@@ -6521,6 +7317,18 @@ enum FileStatus {
   AVAILABLE
   DELETED
   UNAVAILABLE
+}
+
+"""
+A row is created for every resource. It cannot be created or modified by end users.
+The ID of each entry is a hash of the resource ID, type and field.
+When the resource is deleted, the entry is deleted.
+"""
+type StorageCounter {
+  hypi: Hypi
+  type: String!
+  field: String!
+  size: Int!
 }
 
 input ServerlessResponseInput {
@@ -6561,25 +7369,14 @@ enum GaugeFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 input RoleInput {
   hypi: HypiInput
   name: String!
   accounts: [AccountInput!]
-}
-
-input TimePolicyInput {
-  hypi: HypiInput
-  from: DateTime
-  to: DateTime
-  clients: [AuthClientInput!]
-  roles: [RoleInput!]
-  groups: [GroupInput!]
-  accounts: [AccountInput!]
-  realms: [RealmLinkInput!]
-  name: String!
-  logic: AuthLogic
 }
 
 """All fields defined by Product"""
@@ -6595,6 +7392,21 @@ enum ProductFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
+}
+
+input TimePolicyInput {
+  hypi: HypiInput
+  from: DateTime
+  to: DateTime
+  clients: [AuthClientInput!]
+  roles: [RoleInput!]
+  groups: [GroupInput!]
+  accounts: [AccountInput!]
+  realms: [RealmLinkInput!]
+  name: String!
+  logic: AuthLogic
 }
 
 input WorkflowInputOpt {
@@ -6660,6 +7472,8 @@ enum CounterFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 input CurrencyInput {
@@ -6681,6 +7495,8 @@ enum RoleFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 input GroupPolicyGroupByOptions {
@@ -6724,6 +7540,8 @@ enum PersonFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 type RoleAggs {
@@ -6864,6 +7682,8 @@ enum AggOtherScalarFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 
   """The value of the aggregated field for each group"""
   groupValues_hypi
@@ -6899,6 +7719,8 @@ enum RemoteLoginFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 """
@@ -6935,6 +7757,7 @@ type Hypi {
 
   """The ID of the app instance which created and owns the object"""
   instanceId: String
+  tags(arcql: String, first: Int, after: String, last: Int, before: String): [ABACTag!]
 }
 
 type AccessTokenAggs {
@@ -7287,6 +8110,8 @@ enum RealmPolicyFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 input GeoEnvelopeInputOpt {
@@ -7311,7 +8136,6 @@ enum OrganisationScalarFields {
 """A list of all types in the app"""
 enum HypiSchemaType {
   Product
-  Hypi
   PageInfo
   HypiResultEdge
   HypiFilterConnection
@@ -7346,6 +8170,8 @@ enum HypiSchemaType {
   Currently implicitly created by Hypi.
   """
   AuthClient
+  ABACPolicy
+  ABACTag
   Image
   EmailVerification
 
@@ -7393,7 +8219,15 @@ enum HypiSchemaType {
   WorkflowStepData
   WorkflowStep
   AccessToken
+
+  """
+  A row is created for every resource. It cannot be created or modified by end users.
+  The ID of each entry is a hash of the resource ID, type and field.
+  When the resource is deleted, the entry is deleted.
+  """
+  StorageCounter
   PermissionDescription
+  Hypi
 
   """
   Identifies a given country according to ISO3166
@@ -7483,6 +8317,8 @@ enum AuthClientFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 type RealmLinkAggs {
@@ -7494,6 +8330,77 @@ type RealmLinkAggs {
   hypi_trashed: AggOtherScalar
   hypi_createdBy: AggOtherScalar
   hypi_instanceId: AggOtherScalar
+}
+
+"""Scalar fields defined by ABACPolicy"""
+enum ABACPolicyScalarFields {
+  from
+  to
+
+  """
+   The instance the policy applies to. By default the same instance in which it exists.
+   A `Platform Admin` can set it to *, all other users get permission denied if this is not the same as their current instance.
+   
+  """
+  givenInstance
+
+  """e.g. Account or *"""
+  givenType
+
+  """Exactly one of Query|Mutation|Subscription|*"""
+  givenOperation
+
+  """The exact function name or wildcard e.g. find|upsert|*"""
+  givenFn
+
+  """
+  The prefix that any function can begin with e.g. find will match findX, findY, findOther
+  """
+  givenFnPrefix
+  whenResourceTagKeyEq
+  whenResourceTagKeyPrefix
+  whenResourceTagValueEq
+  whenResourceTagValuePrefix
+
+  """Policy applies when the account ID is equal to this"""
+  assertAccountIdEq
+
+  """Policy applies when the account username starts with this"""
+  assertAccountUsernamePrefix
+
+  """When set, the account MUST have a tag whose key is equal to this"""
+  assertAccountTagKeyEq
+
+  """When set, the account MUST have a tag whose key is starts with this"""
+  assertAccountTagKeyPrefix
+
+  """When set, the account MUST have a tag whose value is equal to this"""
+  assertAccountTagValEq
+
+  """When set, the account MUST have a tag whose value is starts with this"""
+  assertAccountTagValPrefix
+
+  """
+  Resource owner can set the boundary to RESOURCE (or anyone that has permission to do so)
+  System Admin for the instance can set the boundary to INSTANCE
+  Platform Admin can set the boundary to PLATFORM
+  PLATFORM|INSTANCE|RESOURCE
+  """
+  boundary
+
+  """
+  If provided, this is a comma separate list of field paths that are allowed by this policy
+  e.g. a,b.c allows access to a and all sub-fields below it as well as to the field c under the parent field b. No other field under b is allowed
+  If the policy is allowing read access, only these fields can be seen. If it is write acces, only these fields can be modified.
+  """
+  allowedFields
+  hypi_id
+  hypi_impl
+  hypi_created
+  hypi_updated
+  hypi_trashed
+  hypi_createdBy
+  hypi_instanceId
 }
 
 type NotificationAggs {
@@ -7705,7 +8612,6 @@ input PermissionInputOpt {
   operationType: OpType
   operations: [String]
   includeAllAccounts: Boolean
-  targetInstance: String
 }
 
 input PasswordReminderInputOpt {
@@ -7861,6 +8767,8 @@ enum EmailVerificationFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
   email_hypi
   email_value
   email_type
@@ -7889,6 +8797,8 @@ enum OrganisationFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 """All fields defined by Address"""
@@ -7912,6 +8822,8 @@ enum AddressFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 input WebhookResponseInputOpt {
@@ -7939,6 +8851,26 @@ enum AggregatedPolicyFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
+}
+
+"""All fields defined by ABACTag"""
+enum ABACTagFields {
+  hypi
+  key
+
+  """If provided then policy assertion can be made against it"""
+  value
+  hypi_id
+  hypi_impl
+  hypi_created
+  hypi_updated
+  hypi_trashed
+  hypi_createdBy
+  hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 """
@@ -8264,7 +9196,6 @@ enum PhoneScalarFields {
 """A list of all types in the app which can created or updated directly"""
 enum HypiMutationType {
   Product
-  Hypi
   PageInfo
   HypiResultEdge
   HypiFilterConnection
@@ -8299,6 +9230,8 @@ enum HypiMutationType {
   Currently implicitly created by Hypi.
   """
   AuthClient
+  ABACPolicy
+  ABACTag
   Image
   EmailVerification
 
@@ -8346,7 +9279,15 @@ enum HypiMutationType {
   WorkflowStepData
   WorkflowStep
   AccessToken
+
+  """
+  A row is created for every resource. It cannot be created or modified by end users.
+  The ID of each entry is a hash of the resource ID, type and field.
+  When the resource is deleted, the entry is deleted.
+  """
+  StorageCounter
   PermissionDescription
+  Hypi
 
   """
   Identifies a given country according to ISO3166
@@ -8463,6 +9404,8 @@ enum PermissionDescriptionFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 """Scalar fields defined by Hypi"""
@@ -8537,7 +9480,6 @@ input URLInputOpt {
 """A list of types which can be subscribed to"""
 type HypiSubscriptionUnion {
   Product: Product
-  Hypi: Hypi
   PageInfo: PageInfo
   HypiResultEdge: HypiResultEdge
   HypiFilterConnection: HypiFilterConnection
@@ -8565,6 +9507,8 @@ type HypiSubscriptionUnion {
   BruteForceDetectionOptions: BruteForceDetectionOptions
   OAuth2AuthorizedClient: OAuth2AuthorizedClient
   AuthClient: AuthClient
+  ABACPolicy: ABACPolicy
+  ABACTag: ABACTag
   Image: Image
   EmailVerification: EmailVerification
   EmailTemplate: EmailTemplate
@@ -8577,7 +9521,9 @@ type HypiSubscriptionUnion {
   WorkflowStepData: WorkflowStepData
   WorkflowStep: WorkflowStep
   AccessToken: AccessToken
+  StorageCounter: StorageCounter
   PermissionDescription: PermissionDescription
+  Hypi: Hypi
   Country: Country
   Account: Account
   Person: Person
@@ -8605,6 +9551,21 @@ type HypiSubscriptionUnion {
   ServerlessResponse: ServerlessResponse
 }
 
+input ABACTagGroupByOptions {
+  """The field by which to to group the matching data"""
+  field: ABACTagScalarFields!
+
+  """
+  If provided, the aggregated data will be ordered by this field and any other field which specifies this field, in the order they're defined
+  """
+  order: AggOrder
+
+  """
+  Applies only to DateTime fields. If provided then the date is grouped to this granularity e.g. if MINUTES then the grouping will be per minute
+  """
+  dateGranularity: TimeUnit
+}
+
 input ServerlessResponseGroupByOptions {
   """The field by which to to group the matching data"""
   field: ServerlessResponseScalarFields!
@@ -8628,6 +9589,7 @@ input HypiMathType {
   BruteForceDetectionOptions: [BruteForceDetectionOptionsMaths!]
   WebhookResponse: [WebhookResponseMaths!]
   WorkflowStep: [WorkflowStepMaths!]
+  StorageCounter: [StorageCounterMaths!]
   Workflow: [WorkflowMaths!]
   Counter: [CounterMaths!]
   Gauge: [GaugeMaths!]
@@ -8684,6 +9646,8 @@ enum OAuth2AuthorizedClientFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 type OAuthProviderAggs {
@@ -8814,25 +9778,6 @@ input EmailVerificationGroupByOptions {
   dateGranularity: TimeUnit
 }
 
-"""All fields defined by Language"""
-enum LanguageFields {
-  hypi
-  family
-  isoName
-  nativeName
-  iso6391Code
-  iso6392TCode
-  iso6392BCode
-  iso6393Code
-  hypi_id
-  hypi_impl
-  hypi_created
-  hypi_updated
-  hypi_trashed
-  hypi_createdBy
-  hypi_instanceId
-}
-
 """Scalar fields defined by AggInt"""
 enum AggIntScalarFields {
   avg
@@ -8853,6 +9798,27 @@ enum AggIntScalarFields {
 
   """The value of the aggregated field for each group"""
   groupValues_value
+}
+
+"""All fields defined by Language"""
+enum LanguageFields {
+  hypi
+  family
+  isoName
+  nativeName
+  iso6391Code
+  iso6392TCode
+  iso6392BCode
+  iso6393Code
+  hypi_id
+  hypi_impl
+  hypi_created
+  hypi_updated
+  hypi_trashed
+  hypi_createdBy
+  hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 interface Policy {
@@ -8950,6 +9916,8 @@ enum ScriptFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 type AccessToken {
@@ -9059,6 +10027,8 @@ enum AccountPolicyFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 input RealmInputOpt {
@@ -9122,6 +10092,8 @@ enum LoginAttemptFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 type WorkflowStepData {
@@ -9179,6 +10151,8 @@ enum OAuthProviderFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 type PasswordReminderAggs {
@@ -9197,6 +10171,10 @@ type PasswordReminderAggs {
   hypi_instanceId: AggOtherScalar
   to_value: AggOtherScalar
   to_type: AggOtherScalar
+}
+
+input StorageCounterMaths {
+  size: MathInputInt
 }
 
 input RealmLinkInputOpt {
@@ -9240,6 +10218,8 @@ enum WebhookResponseFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 input VideoInputOpt {
@@ -9359,6 +10339,7 @@ input HypiInput {
   trashed: DateTime
   createdBy: ID
   instanceId: String
+  tags: [ABACTagInput!]
 }
 
 type RolePolicyAggs {
@@ -9386,13 +10367,6 @@ input OAuth2AuthorizedClientInput {
   refreshToken: String
 }
 
-input AccountPolicyInput {
-  hypi: HypiInput
-  accounts: [AccountInput!]
-  name: String!
-  logic: AuthLogic
-}
-
 """All fields defined by Permission"""
 enum PermissionFields {
   hypi
@@ -9418,18 +10392,6 @@ enum PermissionFields {
   If true, this permission grants/denies access to all accounts (including anonymous account)
   """
   includeAllAccounts
-
-  """
-   When a Permission is created, the instance to which it grants access is assumed to be the same as the one in which it is created.
-   This means - if this field is not provided, it will be set to the current instance by default.
-   Some times, it is necessary to grant permission to a resource that exists in a different instance.
-   In those cases, this field can be set to the instance ID from which the resource needs to be accessed.
-   It is also possible to set this to the wildcard character '*' - in which case, this permission grants access to the resource from any instance.
-   Note that wildcard can only be used to grant access, by default, access is denied to all other instances
-   so a negative policy will have no effect when this field is set to '*'.
-   
-  """
-  targetInstance
   policies
   scopes
   operations
@@ -9440,6 +10402,15 @@ enum PermissionFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
+}
+
+input AccountPolicyInput {
+  hypi: HypiInput
+  accounts: [AccountInput!]
+  name: String!
+  logic: AuthLogic
 }
 
 input WorkflowSessionInputOpt {
@@ -9508,6 +10479,23 @@ input RemoteLoginGroupByOptions {
   Applies only to DateTime fields. If provided then the date is grouped to this granularity e.g. if MINUTES then the grouping will be per minute
   """
   dateGranularity: TimeUnit
+}
+
+"""All fields defined by StorageCounter"""
+enum StorageCounterFields {
+  hypi
+  type
+  field
+  size
+  hypi_id
+  hypi_impl
+  hypi_created
+  hypi_updated
+  hypi_trashed
+  hypi_createdBy
+  hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
 }
 
 input RealmPolicyGroupByOptions {
@@ -9640,6 +10628,8 @@ enum EmailMessageFields {
   hypi_trashed
   hypi_createdBy
   hypi_instanceId
+  hypi_hypi_hidden_tags
+  hypi_tags
   from_hypi
   from_value
   from_type

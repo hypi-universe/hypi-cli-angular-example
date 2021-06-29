@@ -1,0 +1,11 @@
+
+//get default_api_domain from ~/.config/hypi/config.json
+//get domain from instance.yaml
+//get token from ~/.config/hypi/config.json
+const data =  {
+  default_api_domain: 'https://api.alpha.hypi.dev',
+  domain: 'horrible.apps.hypi.app',
+  token: 'eyJhbGciOiJSUzI1NiJ9.eyJoeXBpLmxvZ2luIjp0cnVlLCJoeXBpLnVzZXJuYW1lIjoiZW1hbi5jc2UyMDA4QGdtYWlsLmNvbSIsImh5cGkuZW1haWwiOiJlbWFuLmNzZTIwMDhAZ21haWwuY29tIiwiYXVkIjoiMDFGOEhRNEFFVDA0N1lWRUZBNUZNNVo2M1giLCJpYXQiOjE2MjQwOTIzMjgsImV4cCI6MTYyNjY4NDMyOCwic3ViIjoiMDFGOEhRNEFFVEc5UkE5WE1aWVc5NzlZQzMiLCJuYmYiOjE2MjQwOTIzMjh9.lZec5FG29w0ZNGO_gpFG-Es_Qq_ZAw_cZ2ue0vOq18lTN-BKr80AFnBZrSpGQ3CqiPv1aSe7uAmHboPb2StoUGAYAQvgBsYgQqXe_vbN1iVBJyDtCC1NzUzvAj4bVRXJt1fQHLib7ubmBrJ69Rj47sItPliXGid6AXJtv25_dgBQ_ld22mqBy4i6Tbrb_tFSQUfVHU_T5rrsBtRil2pEzGRdmaKp6Q5FU9lkUYt1Wt106hinU2lM3RV1OkJM2cYmJInLzrX2UlyBYU9yUkFlQv0ejIffyaAAtYSYZovRxL1BpvHfD3n6iCmQc2pI34r1h0hFj6Bmn6_JTZfzFBErGg'
+}
+
+export default data
